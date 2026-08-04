@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liora &amp; Asunmo</title>
+
+<!--
+  ============================================================
+  HOW TO EDIT THIS SITE — read me first
+  ============================================================
+  Everything you'll want to change lives in two places:
+
+  1. The CONTENT block inside the <script> near the bottom,
+     under "// ===== EDIT YOUR CONTENT HERE ====="
+     - PIN / password
+     - Timeline memories (add as many as you like)
+     - Good morning / good night messages
+     - Reasons I love you
+     - Love letters
+     - Song embed
+
+  2. Photos: search this file for "PHOTO SLOT" — each gallery
+     card has an <img> tag with a placeholder. Replace the src
+     with your own photo path (e.g. "photos/1.jpg") once you
+     upload photos alongside this file, or paste a hosted image
+     URL directly.
+
+  Note on the PIN: this is a soft privacy gate, not real security
+  — anyone who views the page source can see the PIN. It's meant
+  to keep casual visitors out, not to be unbreakable.
+  ============================================================
+-->
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap');
+
+  :root{
+    --bg-deep:#0e0c0a;
+    --bg-panel:#18130f;
+    --bg-panel-2:#1f1811;
+    --gold:#c6a15b;
+    --gold-soft:#e4c98a;
+    --gold-dim:rgba(198,161,91,0.35);
+    --ivory:#f3ecdd;
+    --ivory-dim:rgba(243,236,221,0.62);
+    --rose:#c98a93;
+    --line:rgba(198,161,91,0.22);
+    --shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg-deep);
+    color:var(--ivory);
+    font-family:'Jost',sans-serif;
+    font-weight:300;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.serif{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:500;
+    letter-spacing:0.01em;
+  }
+  .eyebrow{
+    font-family:'Jost',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.32em;
+    font-size:0.7rem;
+    color:var(--gold);
+    font-weight:400;
+  }
+  a{color:var(--gold-soft);}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important;}
+  }
+
+  /* ---------- Starfield ambient background ---------- */
+  #stars{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+  }
+
+  /* ---------- Wax seal signature element ---------- */
+  .seal{
+    width:56px;height:56px;border-radius:50%;
+    background:radial-gradient(circle at 32% 30%, var(--gold-soft), var(--gold) 55%, #8a6f38 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(0,0,0,0.15);
+    position:relative;
+    flex-shrink:0;
+  }
+  .seal svg{width:26px;height:26px;fill:#2a1f0f;opacity:0.85;}
+
+  /* ---------- PIN GATE ---------- */
+  #gate{
+    position:fixed; inset:0; z-index:1000;
+    background:radial-gradient(ellipse at center, #171210 0%, #0a0806 100%);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    transition:opacity 0.8s ease, visibility 0.8s ease;
+  }
+  #gate.hidden{opacity:0; visibility:hidden; pointer-events:none;}
+  .gate-card{
+    text-align:center; max-width:380px; width:100%;
+    padding:48px 36px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius:4px;
+    position:relative;
+  }
+  .gate-card .seal{margin:0 auto 22px;}
+  .gate-card h1{font-size:1.9rem; margin:0 0 6px; color:var(--gold-soft);}
+  .gate-card p{color:var(--ivory-dim); font-size:0.9rem; margin:0 0 28px;}
+  #pin-input{
+    width:100%; background:transparent; border:none; border-bottom:1px solid var(--gold-dim);
+    color:var(--ivory); font-family:'Jost'; letter-spacing:0.3em; text-align:center;
+    font-size:1.1rem; padding:10px 4px; outline:none; text-transform:uppercase;
+  }
+  #pin-input:focus{border-bottom-color:var(--gold);}
+  .gate-btn{
+    margin-top:26px; background:none; border:1px solid var(--gold);
+    color:var(--gold-soft); padding:12px 34px; font-family:'Jost'; letter-spacing:0.18em;
+    font-size:0.72rem; text-transform:uppercase; cursor:pointer; border-radius:2px;
+    transition:background 0.35s ease, color 0.35s ease;
+  }
+  .gate-btn:hover{background:var(--gold); color:#171210;}
+  #gate-error{color:var(--rose); font-size:0.78rem; margin-top:14px; min-height:1em;}
+
+  /* ---------- Layout shell ---------- */
+  main{position:relative; z-index:1;}
+  section{padding:120px 24px; max-width:1080px; margin:0 auto; position:relative;}
+  .center{text-align:center;}
+  .divider{
+    width:1px; height:70px; margin:0 auto;
+    background:linear-gradient(var(--gold), transparent);
+  }
+
+  /* ---------- HERO ---------- */
+  #hero{
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:24px;
+  }
+  #hero .eyebrow{margin-bottom:22px;}
+  #hero h1{
+    font-size:clamp(2.6rem, 7vw, 5rem);
+    margin:0; line-height:1.05;
+    color:var(--ivory);
+  }
+  #hero h1 .amp{color:var(--gold); font-style:italic; padding:0 0.15em;}
+  #hero .since{
+    margin-top:18px; color:var(--ivory-dim); font-size:0.95rem; letter-spacing:0.05em;
+  }
+  #live-counter{
+    margin-top:52px; display:flex; gap:28px; flex-wrap:wrap; justify-content:center;
+  }
+  .counter-unit{min-width:78px;}
+  .counter-unit .num{
+    font-family:'Cormorant Garamond'; font-size:2.6rem; color:var(--gold-soft); display:block; font-weight:500;
+  }
+  .counter-unit .lbl{
+    font-size:0.62rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--ivory-dim);
+  }
+  .enter-btn{
+    margin-top:64px; background:none; border:1px solid var(--gold); color:var(--gold-soft);
+    padding:16px 40px; font-family:'Jost'; letter-spacing:0.2em; font-size:0.72rem;
+    text-transform:uppercase; cursor:pointer; border-radius:2px; position:relative;
+    transition:letter-spacing 0.4s ease, background 0.4s ease, color 0.4s ease;
+  }
+  .enter-btn:hover{background:var(--gold); color:#171210; letter-spacing:0.28em;}
+
+  /* ---------- Section headers ---------- */
+  .section-head{margin-bottom:64px;}
+  .section-head h2{font-size:clamp(2rem,4vw,2.8rem); margin:10px 0 0; color:var(--ivory);}
+  .section-head p{color:var(--ivory-dim); max-width:520px; margin:14px auto 0; font-size:0.95rem;}
+
+  /* ---------- STORY / TIMELINE ---------- */
+  .timeline{position:relative; padding-left:0;}
+  .timeline::before{
+    content:""; position:absolute; left:130px; top:6px; bottom:6px; width:1px;
+    background:linear-gradient(var(--line), var(--gold-dim), var(--line));
+  }
+  .t-item{
+    display:grid; grid-template-columns:130px 1fr; gap:36px; margin-bottom:64px; position:relative;
+  }
+  .t-date{
+    text-align:right; padding-right:32px; position:relative;
+  }
+  .t-date .d{font-family:'Cormorant Garamond'; font-size:1.15rem; color:var(--gold-soft); display:block;}
+  .t-date .y{font-size:0.68rem; letter-spacing:0.15em; color:var(--ivory-dim);}
+  .t-item .seal{
+    position:absolute; left:130px; top:0; transform:translateX(-50%);
+    width:34px; height:34px;
+  }
+  .t-item .seal svg{width:16px;height:16px;}
+  .t-body{
+    background:linear-gradient(180deg, rgba(255,255,255,0.025), transparent);
+    border:1px solid var(--line); border-radius:4px; padding:26px 28px;
+  }
+  .t-body h3{margin:0 0 10px; font-size:1.4rem; color:var(--gold-soft);}
+  .t-body p{margin:0; color:var(--ivory-dim); font-size:0.92rem; line-height:1.75;}
+
+  @media (max-width:640px){
+    .timeline::before{left:20px;}
+    .t-item{grid-template-columns:1fr; gap:14px; padding-left:44px;}
+    .t-date{text-align:left; padding-right:0;}
+    .t-item .seal{left:20px; width:28px; height:28px;}
+    .t-item .seal svg{width:13px;height:13px;}
+  }
+
+  /* ---------- GALLERY ---------- */
+  .gallery-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:22px;
+  }
+  .frame{
+    background:var(--bg-panel); border:1px solid var(--line); padding:10px; border-radius:2px;
+    cursor:pointer; transition:transform 0.4s ease, border-color 0.4s ease;
+  }
+  .frame:hover{transform:translateY(-6px); border-color:var(--gold-dim);}
+  .frame .ph{
+    width:100%; aspect-ratio:4/5; background:var(--bg-panel-2); display:flex; align-items:center;
+    justify-content:center; overflow:hidden; position:relative;
+  }
+  .frame .ph img{width:100%; height:100%; object-fit:cover; display:none;}
+  .frame .ph img[src]:not([src=""]){display:block;}
+  .frame .ph .icon{color:var(--gold-dim);}
+  .frame .cap{text-align:center; font-size:0.68rem; letter-spacing:0.1em; color:var(--ivory-dim); padding:10px 4px 2px; text-transform:uppercase;}
+  #lightbox{
+    position:fixed; inset:0; background:rgba(6,5,4,0.92); z-index:900; display:none;
+    align-items:center; justify-content:center; padding:32px; cursor:zoom-out;
+  }
+  #lightbox.open{display:flex;}
+  #lightbox img{max-width:90vw; max-height:85vh; border:1px solid var(--gold-dim);}
+
+  /* ---------- MESSAGES ---------- */
+  .msg-grid{display:grid; grid-template-columns:1fr 1fr; gap:26px;}
+  @media (max-width:640px){.msg-grid{grid-template-columns:1fr;}}
+  .msg-card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+    border:1px solid var(--line); border-radius:4px; padding:34px 30px; position:relative;
+  }
+  .msg-card .glyph{width:22px;height:22px; fill:var(--gold); margin-bottom:16px; display:block;}
+  .msg-card h3{margin:0 0 14px; font-size:1.25rem; color:var(--gold-soft);}
+  .msg-card p{color:var(--ivory-dim); font-size:0.95rem; line-height:1.7; font-style:italic; min-height:3.4em;}
+
+  /* ---------- LOVE COUNTER (big stat block) ---------- */
+  #counter .num-big{
+    font-family:'Cormorant Garamond'; font-size:clamp(3rem,8vw,5.5rem); color:var(--gold-soft);
+    line-height:1; font-weight:500;
+  }
+  .breakdown{
+    display:flex; gap:0; flex-wrap:wrap; justify-content:center; margin-top:44px;
+    border-top:1px solid var(--line); border-left:1px solid var(--line);
+  }
+  .breakdown div{
+    flex:1; min-width:110px; padding:22px 10px; border-right:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  .breakdown .n{font-family:'Cormorant Garamond'; font-size:1.9rem; color:var(--gold-soft); display:block;}
+  .breakdown .l{font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--ivory-dim);}
+
+  /* ---------- REASONS ---------- */
+  .reason-box{
+    max-width:560px; margin:0 auto; text-align:center;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+    border:1px solid var(--line); border-radius:4px; padding:52px 36px; min-height:150px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .reason-box p{font-family:'Cormorant Garamond'; font-size:1.5rem; font-style:italic; color:var(--ivory); margin:0;}
+  .reason-btn{
+    display:block; margin:34px auto 0; background:none; border:1px solid var(--gold); color:var(--gold-soft);
+    padding:14px 38px; font-family:'Jost'; letter-spacing:0.18em; font-size:0.7rem; text-transform:uppercase;
+    cursor:pointer; border-radius:2px; transition:background 0.35s, color 0.35s;
+  }
+  .reason-btn:hover{background:var(--gold); color:#171210;}
+  .reason-count{margin-top:16px; font-size:0.68rem; letter-spacing:0.15em; color:var(--ivory-dim); text-transform:uppercase;}
+
+  /* ---------- LETTERS ---------- */
+  .envelopes{display:flex; gap:26px; flex-wrap:wrap; justify-content:center;}
+  .envelope{
+    width:220px; cursor:pointer; text-align:center;
+  }
+  .env-face{
+    width:220px; height:150px; background:linear-gradient(160deg, #221a12, #150f0a);
+    border:1px solid var(--gold-dim); position:relative; border-radius:2px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .env-face .seal{position:absolute;}
+  .env-face::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:0;
+    border-left:110px solid transparent; border-right:110px solid transparent;
+    border-top:75px solid #1f1710;
+  }
+  .env-label{margin-top:12px; font-size:0.72rem; letter-spacing:0.12em; color:var(--ivory-dim); text-transform:uppercase;}
+  #letter-modal{
+    position:fixed; inset:0; background:rgba(6,5,4,0.92); z-index:900; display:none;
+    align-items:center; justify-content:center; padding:24px;
+  }
+  #letter-modal.open{display:flex;}
+  .letter-paper{
+    max-width:480px; width:100%; max-height:80vh; overflow-y:auto;
+    background:#f3ecdd; color:#241d13; padding:44px 38px; border-radius:2px;
+    font-family:'Cormorant Garamond'; font-size:1.15rem; line-height:1.8; position:relative;
+    box-shadow:var(--shadow);
+  }
+  .letter-close{
+    position:absolute; top:14px; right:18px; background:none; border:none; color:#7a6a4a;
+    font-size:1.4rem; cursor:pointer; font-family:'Jost';
+  }
+
+  /* ---------- SONGS ---------- */
+  .song-panel{
+    max-width:560px; margin:0 auto; text-align:center;
+    border:1px solid var(--line); border-radius:4px; padding:46px 32px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+  }
+  .song-panel .seal{margin:0 auto 20px;}
+  .song-panel h3{margin:0 0 8px; font-size:1.6rem; color:var(--gold-soft);}
+  .song-panel p{color:var(--ivory-dim); font-size:0.85rem; margin:0 0 22px;}
+  .embed-slot{
+    border:1px dashed var(--gold-dim); border-radius:4px; padding:30px; font-size:0.78rem;
+    color:var(--ivory-dim); line-height:1.7;
+  }
+
+  /* ---------- COUNTDOWN ---------- */
+  .countdown-grid{display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-top:20px;}
+  .cd-unit{
+    width:96px; padding:20px 6px; border:1px solid var(--line); border-radius:4px; text-align:center;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+  }
+  .cd-unit .n{font-family:'Cormorant Garamond'; font-size:2.1rem; color:var(--gold-soft); display:block;}
+  .cd-unit .l{font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--ivory-dim);}
+
+  footer{
+    text-align:center; padding:60px 24px 80px; color:var(--ivory-dim); font-size:0.75rem;
+    letter-spacing:0.1em;
+  }
+  footer .seal{margin:0 auto 18px; width:40px; height:40px;}
+  footer .seal svg{width:18px;height:18px;}
+
+  ::selection{background:var(--gold-dim); color:#1a1410;}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- ================= PIN GATE ================= -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="seal">
+      <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10.1-9.3C.4 8.7 1.7 5 5.3 5c2 0 3.4 1 4.7 2.6C11.3 6 12.7 5 14.7 5c3.6 0 4.9 3.7 3.4 6.7C20.5 16.4 12 21 12 21z"/></svg>
+    </div>
+    <h1>Liora &amp; Asunmo</h1>
+    <p>This little corner of the internet belongs to just the two of you.</p>
+    <input id="pin-input" type="password" maxlength="20" placeholder="ENTER PASSWORD" autocomplete="off">
+    <div id="gate-error"></div>
+    <button class="gate-btn" onclick="checkPin()">Unlock</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ================= HERO ================= -->
+  <section id="hero">
+    <div class="eyebrow">a private love story</div>
+    <h1>Liora <span class="amp">&amp;</span> Asunmo</h1>
+    <div class="since">together since the 27th of June, 2025</div>
+    <div id="live-counter"></div>
+    <button class="enter-btn" onclick="document.getElementById('story').scrollIntoView({behavior:'smooth'})">Enter Our Story</button>
+  </section>
+
+  <!-- ================= STORY ================= -->
+  <section id="story">
+    <div class="section-head center">
+      <div class="eyebrow">our story</div>
+      <h2>How We Got Here</h2>
+      <p>Every love has a timeline only the two people in it truly understand. This is ours.</p>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <!-- ================= GALLERY ================= -->
+  <section id="gallery">
+    <div class="section-head center">
+      <div class="eyebrow">gallery</div>
+      <h2>Us, In Pictures</h2>
+      <p>Add your own photos by replacing the image sources — see the note at the top of this file.</p>
+    </div>
+    <div class="gallery-grid" id="gallery-grid"></div>
+  </section>
+  <div id="lightbox" onclick="this.classList.remove('open')"><img id="lightbox-img" src=""></div>
+
+  <!-- ================= DAILY MESSAGES ================= -->
+  <section id="messages">
+    <div class="section-head center">
+      <div class="eyebrow">every day, a little love</div>
+      <h2>Good Morning &amp; Good Night</h2>
+      <p>A new note appears here each day, automatically.</p>
+    </div>
+    <div class="msg-grid">
+      <div class="msg-card">
+        <svg class="glyph" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+        <h3>Good Morning</h3>
+        <p id="morning-msg"></p>
+      </div>
+      <div class="msg-card">
+        <svg class="glyph" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
+        <h3>Good Night</h3>
+        <p id="night-msg"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LOVE COUNTER ================= -->
+  <section id="counter">
+    <div class="section-head center">
+      <div class="eyebrow">time, counted with love</div>
+      <h2>Exactly How Long</h2>
+    </div>
+    <div class="breakdown" id="breakdown"></div>
+  </section>
+
+  <!-- ================= REASONS ================= -->
+  <section id="reasons">
+    <div class="section-head center">
+      <div class="eyebrow">a running list</div>
+      <h2>Reasons I Love You</h2>
+      <p>Press the button. A new reason, every time.</p>
+    </div>
+    <div class="reason-box"><p id="reason-text">Press below to begin.</p></div>
+    <button class="reason-btn" onclick="showReason()">Reveal a Reason</button>
+    <div class="reason-count" id="reason-count"></div>
+  </section>
+
+  <!-- ================= LETTERS ================= -->
+  <section id="letters">
+    <div class="section-head center">
+      <div class="eyebrow">handwritten &amp; kept</div>
+      <h2>Love Letters</h2>
+      <p>Click an envelope to open it. Add your own letters in the script's <code>letters</code> list.</p>
+    </div>
+    <div class="envelopes" id="envelopes"></div>
+  </section>
+  <div id="letter-modal">
+    <div class="letter-paper">
+      <button class="letter-close" onclick="document.getElementById('letter-modal').classList.remove('open')">✕</button>
+      <div id="letter-text"></div>
+    </div>
+  </div>
+
+  <!-- ================= SONGS ================= -->
+  <section id="songs">
+    <div class="section-head center">
+      <div class="eyebrow">our song</div>
+      <h2>Qunut</h2>
+    </div>
+    <div class="song-panel">
+      <div class="seal"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg></div>
+      <h3>Doa Qunut</h3>
+      <p>Eka Hafeez — press play whenever you want to hear it.</p>
+      <div class="embed-slot" id="song-slot" style="padding:0; border-style:solid; overflow:hidden;">
+        <!-- Doa Qunut — Eka Hafeez. To use a different song, replace the src below
+             with another YouTube or Spotify embed link. -->
+        <iframe width="100%" height="220" src="https://www.youtube.com/embed/ZnxjaKVLHKI" title="Doa Qunut - Eka Hafeez" style="display:block; border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= COUNTDOWN ================= -->
+  <section id="countdown">
+    <div class="section-head center">
+      <div class="eyebrow">looking forward</div>
+      <h2>Next Anniversary</h2>
+      <p>Counting down to the 27th of June.</p>
+    </div>
+    <div class="countdown-grid" id="countdown-grid"></div>
+  </section>
+
+  <footer>
+    <div class="seal"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10.1-9.3C.4 8.7 1.7 5 5.3 5c2 0 3.4 1 4.7 2.6C11.3 6 12.7 5 14.7 5c3.6 0 4.9 3.7 3.4 6.7C20.5 16.4 12 21 12 21z"/></svg></div>
+    Liora &amp; Asunmo — since 27 June 2025
+  </footer>
+
+</main>
+
+<script>
+/* ================= EDIT YOUR CONTENT HERE ================= */
+
+const PIN = "AKANKE";
+
+const START_DATE = new Date(2025, 5, 27, 0, 0, 0); // June 27, 2025 (month is 0-indexed)
+
+const timelineData = [
+  {
+    date: "27 June",
+    year: "2025",
+    title: "The Day We Met",
+    text: "The day it all began — we met and talked for the first time. Neither of us knew yet how much this conversation would come to mean."
+  },
+  {
+    date: "September",
+    year: "2025",
+    title: "We Said Yes",
+    text: "What started as conversation became something we both wanted to hold onto — we started dating in September, and everything since has been ours."
+  },
+  {
+    date: "24 November",
+    year: "2025",
+    title: "Lagos",
+    text: "The first time we saw each other again after we started dating. I was in Lagos for a conference, and she was serving as a corps member nearby. We met at a mosque, then walked together while I found my way to my hotel. The next day, we were at the conference together — holding hands, taking pictures, praying qunut side by side. One of the best days of my life. She gave me handwritten letters that day, and I've kept every word."
+  }
+];
+
+const morningMessages = [
+  "Good morning, Liora. Wherever you are today, I hope it feels like sunlight.",
+  "Waking up knowing you exist somewhere in this world makes the morning kinder.",
+  "May today bring you ease, barakah, and small reasons to smile.",
+  "Good morning. You crossed my mind before my feet even touched the floor.",
+  "However today unfolds, know that someone is thinking of you fondly, right now.",
+  "Rise slowly, breathe deeply — the world can wait a minute while you have your coffee.",
+  "Good morning to the person who makes ordinary days feel worth showing up for.",
+  "I hope your morning is as gentle with you as you are with everyone around you.",
+  "Somewhere between yesterday and today, I fell a little more in love. Good morning.",
+  "May Allah make today light on you, and may I get to hear about all of it later.",
+  "Good morning, love. Here's to another day of us.",
+  "Wishing you a morning that matches the warmth you carry everywhere you go.",
+  "Every morning I don't say it enough: I'm grateful you're mine to think about.",
+  "Good morning — go easy on yourself today, and remember I'm proud of you.",
+  "Start the day knowing you're loved, fully and without conditions."
+];
+
+const nightMessages = [
+  "Good night, Liora. Rest well — today is done, and you did enough.",
+  "Sleep peacefully. Tomorrow will still have me in it, thinking of you.",
+  "Whatever today asked of you, I hope tonight gives it back tenfold in rest.",
+  "Good night. May your dreams be kinder than any worry you carried today.",
+  "Close your eyes knowing you were loved today, and every day before it.",
+  "Good night — thank you for existing, for choosing me, for being you.",
+  "Rest now. I'll still be here in the morning, same as always.",
+  "May tonight's sleep be deep and your tomorrow be lighter.",
+  "Good night, love. Distance means nothing to how close I feel to you.",
+  "Before you sleep — you are missed, you are loved, you are enough.",
+  "Good night. Let today go gently, and let tomorrow be even better.",
+  "Sleep well knowing there's a whole story still being written, and it's ours.",
+  "Good night, Liora. May your rest be as peaceful as a solved dua.",
+  "Wherever you are, I hope your pillow is soft and your heart is light.",
+  "Good night. Until morning brings us back to each other's thoughts."
+];
+
+const reasons = [
+  "The way you show up for people, even when it costs you something.",
+  "How steady you are — I've never once doubted where I stand with you.",
+  "The way you prayed beside me in Lagos like it was the most natural thing in the world.",
+  "Your handwriting. I still have the letters.",
+  "How you make hard days feel survivable just by being on the other end of the phone.",
+  "The patience you carry, even when I don't deserve it.",
+  "How you remember the small things I mention once in passing.",
+  "The way you laugh with your whole self.",
+  "That you chose to walk with me through Lagos even though you didn't have to.",
+  "How safe I feel telling you the truth, even the unflattering parts.",
+  "Your faith, and how quietly serious you are about it.",
+  "The way you say my name.",
+  "How you make ordinary Tuesdays feel like something worth remembering.",
+  "That you gave me letters instead of just words — you wanted them to last.",
+  "How you never make me feel small for needing you.",
+  "The way you hold my hand like it's a decision, not a habit.",
+  "Your honesty, even when it's inconvenient for both of us.",
+  "How you make me want to be a better version of myself, without ever demanding it.",
+  "That first conversation on the 27th of June — you had no idea what you were starting.",
+  "Simply put: you. All of you."
+];
+
+// Letters — add more objects like the one below. Each needs a title + text.
+const letters = [
+  {
+    title: "A Placeholder, Waiting To Be Replaced",
+    text: "This is just an example envelope. Open the script section of this file, find the <b>letters</b> list, and add your real letters here — titles and all. Once you do, this placeholder will be the first thing to go."
+  }
+];
+
+/* ============================================================
+   NOTHING BELOW THIS LINE NEEDS EDITING — but feel free to look
+   ============================================================ */
+
+// ---- Starfield ----
+(function(){
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let w,h,stars=[];
+  function resize(){
+    w=canvas.width=window.innerWidth;
+    h=canvas.height=window.innerHeight;
+    stars=[];
+    const count = Math.floor((w*h)/9000);
+    for(let i=0;i<count;i++){
+      stars.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.2+0.2,a:Math.random(),s:Math.random()*0.015+0.003});
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle='#c6a15b';
+    stars.forEach(s=>{
+      s.a += s.s;
+      const alpha = (Math.sin(s.a)+1)/2*0.5+0.05;
+      ctx.globalAlpha=alpha;
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fill();
+    });
+    ctx.globalAlpha=1;
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);
+  resize();draw();
+})();
+
+// ---- PIN gate ----
+function checkPin(){
+  const val = document.getElementById('pin-input').value.trim().toUpperCase();
+  if(val === PIN){
+    document.getElementById('gate').classList.add('hidden');
+  } else {
+    document.getElementById('gate-error').textContent = "That's not quite it — try again.";
+  }
+}
+document.getElementById('pin-input').addEventListener('keydown', e=>{
+  if(e.key==='Enter') checkPin();
+});
+
+// ---- Live "together since" counter (hero) ----
+const sealSVG = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10.1-9.3C.4 8.7 1.7 5 5.3 5c2 0 3.4 1 4.7 2.6C11.3 6 12.7 5 14.7 5c3.6 0 4.9 3.7 3.4 6.7C20.5 16.4 12 21 12 21z"/></svg>';
+
+function diffParts(from, to){
+  let years = to.getFullYear() - from.getFullYear();
+  let months = to.getMonth() - from.getMonth();
+  let days = to.getDate() - from.getDate();
+  let hours = to.getHours() - from.getHours();
+  let minutes = to.getMinutes() - from.getMinutes();
+  let seconds = to.getSeconds() - from.getSeconds();
+  if(seconds<0){seconds+=60;minutes--;}
+  if(minutes<0){minutes+=60;hours--;}
+  if(hours<0){hours+=24;days--;}
+  if(days<0){
+    const prevMonth = new Date(to.getFullYear(), to.getMonth(), 0).getDate();
+    days += prevMonth; months--;
+  }
+  if(months<0){months+=12;years--;}
+  return {years,months,days,hours,minutes,seconds};
+}
+
+function updateCounters(){
+  const now = new Date();
+  const p = diffParts(START_DATE, now);
+
+  const heroEl = document.getElementById('live-counter');
+  heroEl.innerHTML = `
+    <div class="counter-unit"><span class="num">${p.years}</span><span class="lbl">Years</span></div>
+    <div class="counter-unit"><span class="num">${p.months}</span><span class="lbl">Months</span></div>
+    <div class="counter-unit"><span class="num">${p.days}</span><span class="lbl">Days</span></div>
+    <div class="counter-unit"><span class="num">${p.hours}</span><span class="lbl">Hours</span></div>
+    <div class="counter-unit"><span class="num">${p.minutes}</span><span class="lbl">Min</span></div>
+  `;
+
+  const totalDays = Math.floor((now - START_DATE)/86400000);
+  document.getElementById('breakdown').innerHTML = `
+    <div><span class="n">${p.years}</span><span class="l">Years</span></div>
+    <div><span class="n">${p.months}</span><span class="l">Months</span></div>
+    <div><span class="n">${p.days}</span><span class="l">Days</span></div>
+    <div><span class="n">${p.hours}</span><span class="l">Hours</span></div>
+    <div><span class="n">${p.minutes}</span><span class="l">Minutes</span></div>
+    <div><span class="n">${totalDays}</span><span class="l">Total Days</span></div>
+  `;
+}
+updateCounters();
+setInterval(updateCounters, 1000);
+
+// ---- Anniversary countdown ----
+function updateCountdown(){
+  const now = new Date();
+  let next = new Date(now.getFullYear(), START_DATE.getMonth(), START_DATE.getDate());
+  if(next < now) next.setFullYear(next.getFullYear()+1);
+  let diff = next - now;
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor(diff/3600000)%24;
+  const m = Math.floor(diff/60000)%60;
+  const s = Math.floor(diff/1000)%60;
+  document.getElementById('countdown-grid').innerHTML = `
+    <div class="cd-unit"><span class="n">${d}</span><span class="l">Days</span></div>
+    <div class="cd-unit"><span class="n">${h}</span><span class="l">Hours</span></div>
+    <div class="cd-unit"><span class="n">${m}</span><span class="l">Minutes</span></div>
+    <div class="cd-unit"><span class="n">${s}</span><span class="l">Seconds</span></div>
+  `;
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// ---- Timeline ----
+const timelineEl = document.getElementById('timeline');
+timelineData.forEach(item=>{
+  const div = document.createElement('div');
+  div.className='t-item';
+  div.innerHTML = `
+    <div class="t-date"><span class="d">${item.date}</span><span class="y">${item.year}</span></div>
+    <div class="seal">${sealSVG}</div>
+    <div class="t-body"><h3>${item.title}</h3><p>${item.text}</p></div>
+  `;
+  timelineEl.appendChild(div);
+});
+
+// ---- Gallery ----
+// To add more photos later: drop a file in the "photos" folder next to this
+// HTML file, then add a line below in the same { src, cap } format.
+const galleryGrid = document.getElementById('gallery-grid');
+const galleryPhotos = [
+  { src: "photos/photo-01.jpg", cap: "On The Road" },
+  { src: "photos/photo-02.jpg", cap: "Close" },
+  { src: "photos/photo-03.jpg", cap: "Playful" },
+  { src: "photos/photo-11.jpg", cap: "Us" },
+  { src: "photos/photo-12.jpg", cap: "Holding Hands" },
+  { src: "photos/photo-13.jpg", cap: "Lagos — The Conference" },
+  { src: "photos/photo-14.jpg", cap: "Lagos — Together" },
+  { src: "photos/photo-04.jpg", cap: "Dinner Out" },
+  { src: "photos/photo-05.jpg", cap: "Exploring" },
+  { src: "photos/photo-06.jpg", cap: "Her Smile" },
+  { src: "photos/photo-07.jpg", cap: "Ice Cream Date" },
+  { src: "photos/photo-08.jpg", cap: "Together" },
+  { src: "photos/photo-09.jpg", cap: "Laughing" },
+  { src: "photos/photo-10.jpg", cap: "Candid" },
+  { src: "photos/photo-15.jpg", cap: "Her Style" },
+  { src: "photos/photo-16.jpg", cap: "Favorites" }
+];
+galleryPhotos.forEach((p)=>{
+  const div = document.createElement('div');
+  div.className='frame';
+  div.innerHTML = `
+    <div class="ph" onclick="openLightbox(this)">
+      <img src="${p.src}" alt="${p.cap}">
+      <svg class="icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="9" cy="10" r="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg>
+    </div>
+    <div class="cap">${p.cap}</div>
+  `;
+  galleryGrid.appendChild(div);
+});
+function openLightbox(el){
+  const img = el.querySelector('img');
+  if(!img.getAttribute('src')) return;
+  document.getElementById('lightbox-img').src = img.src;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+// ---- Daily messages (deterministic by day of year, same for both partners) ----
+function dayOfYear(d){
+  const start = new Date(d.getFullYear(),0,0);
+  return Math.floor((d - start)/86400000);
+}
+const today = new Date();
+document.getElementById('morning-msg').textContent = morningMessages[dayOfYear(today)%morningMessages.length];
+document.getElementById('night-msg').textContent = nightMessages[dayOfYear(today)%nightMessages.length];
+
+// ---- Reasons ----
+let reasonPool = [];
+let reasonSeen = 0;
+function refillPool(){
+  reasonPool = [...reasons].sort(()=>Math.random()-0.5);
+}
+refillPool();
+function showReason(){
+  if(reasonPool.length===0) refillPool();
+  document.getElementById('reason-text').textContent = reasonPool.pop();
+  reasonSeen++;
+  document.getElementById('reason-count').textContent = `${reasonSeen} of ${reasons.length}${reasonSeen>reasons.length? ' (round '+Math.ceil(reasonSeen/reasons.length)+')':''} revealed`;
+}
+
+// ---- Letters ----
+const envelopesEl = document.getElementById('envelopes');
+letters.forEach((letter, i)=>{
+  const div = document.createElement('div');
+  div.className='envelope';
+  div.onclick = ()=>openLetter(i);
+  div.innerHTML = `
+    <div class="env-face"><div class="seal">${sealSVG}</div></div>
+    <div class="env-label">${letter.title}</div>
+  `;
+  envelopesEl.appendChild(div);
+});
+function openLetter(i){
+  document.getElementById('letter-text').innerHTML = `<h3 style="margin-top:0">${letters[i].title}</h3><p>${letters[i].text}</p>`;
+  document.getElementById('letter-modal').classList.add('open');
+}
+</script>
+</body>
+</html>
